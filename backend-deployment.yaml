@@ -1,0 +1,33 @@
+apiVersion: apps/v1 # Kubernetes API version
+kind: Deployment  # Kubernetes resource kind we are creating
+metadata:
+  name: lgpd-backend
+spec:
+  selector:
+    matchLabels:
+      app: lgpd-backend
+  replicas: 2 # Number of replicas that will be created for this deployment
+  template:
+    metadata:
+      labels:
+        app: lgpd-backend
+    spec:
+      containers:
+      - name: lgpd-backend
+        image: mthama/lgpd-backend:latest # Image that will be used to containers in the cluster
+        ports:
+        - containerPort: 8080 # The port that the container is running on in the cluster
+---
+kind: Service  # Kubernetes API version
+apiVersion: v1 # Kubernetes resource kind we are creating
+metadata:
+  name: backend-service
+spec:
+  selector:
+    app: lgpd-backend
+  ports:
+  - protocol: TCP
+    port: 8080   # The port that the service is running on in the cluster
+    targetPort: 8080   # The port exposed by the service
+    nodePort: 31000
+  type: NodePort     # type of the service.

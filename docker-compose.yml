@@ -1,0 +1,34 @@
+version: "3"
+services:
+  lgpd-frontend:
+    image: lgpd-frontend:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - lgpd-backend
+    networks:
+      - lgpd-network
+  lgpd-backend:
+    image: lgpd-backend:latest
+    ports:
+      - "8080:8080"
+    expose:
+      - "8080"
+    depends_on:
+      - docker-mysql
+    networks:
+      - lgpd-network
+  docker-mysql:
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    expose:
+      - "3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=1q2w3e4r5t
+      - MYSQL_DATABASE=lgpddb
+    networks:
+      - lgpd-network
+networks:
+  lgpd-network:
+    driver: bridge

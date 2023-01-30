@@ -1,0 +1,54 @@
+services:
+  - docker:dind
+
+variables:
+  IMAGE_OPENJDK_MAVEN: maven:3.8.7-eclipse-temurin-17-focal
+  DOCKER_DRIVER: overlay
+
+stages:
+  - build
+  - test
+  - publish-image
+  - trigger-frontend
+
+build_back:
+  image: $IMAGE_OPENJDK_MAVEN
+  stage: build
+  script:
+    - echo "Compiling the code..."
+    - mvn -Dmaven.test.skip=true package
+  artifacts:
+    paths:
+      - target/*.jar
+
+maven-test:
+  image: $IMAGE_OPENJDK_MAVEN
+  stage: test
+  script: "mvn test"
+  artifacts:
+    paths:
+      - target/*.jar
+  allow_failure: true
+
+publish-image:
+  image: docker:latest
+  #image:
+  #  name: bitnami/kubectl:latest
+  #  entrypoint: [""]
+  stage: publish-image
+  script:
+    - echo "Building Docker Image..."
+    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
+    # publish to docker io
+    - echo "Publishing Docker Image..."
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker push "$CI_REGISTRY_IMAGE"
+    # deploy to cluster
+    #- kubectl apply -f $CI_PROJECT_DIR/lgpd-backend/. # Directory where yamls are placed in repo
+    #- kubectl get pods -n lgpd-backend
+    # finish message
+    - echo "Application successfully deployed."
+
+trigger_front:
+  stage: trigger-frontend
+  trigger: marcelohama/lgpd-frontend

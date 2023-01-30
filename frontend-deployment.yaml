@@ -1,0 +1,33 @@
+apiVersion: apps/v1 # Kubernetes API version
+kind: Deployment  # Kubernetes resource kind we are creating
+metadata:
+  name: lgpd-frontend
+spec:
+  selector:
+    matchLabels:
+      app: lgpd-frontend
+  replicas: 3 # Number of replicas that will be created for this deployment
+  template:
+    metadata:
+      labels:
+        app: lgpd-frontend
+    spec:
+      containers:
+      - name: lgpd-frontend
+        image: mthama/lgpd-frontend:latest # Image that will be used to containers in the cluster
+        ports:
+        - containerPort: 80 # The port that the container is running on in the cluster
+---
+kind: Service  # Kubernetes API version
+apiVersion: v1 # Kubernetes resource kind we are creating
+metadata:
+  name: frontend-service
+spec:
+  selector:
+    app: lgpd-frontend
+  ports:
+  - protocol: TCP
+    port: 80   # The port that the service is running on in the cluster
+    targetPort: 80   # The port exposed by the service
+    nodePort: 31001
+  type: NodePort     # type of the service.

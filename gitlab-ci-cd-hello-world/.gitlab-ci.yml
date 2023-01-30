@@ -1,0 +1,54 @@
+services:
+  - docker:dind
+
+stages:
+  - dependencies
+  - build
+  - publish
+
+install_dependencies:
+  image: node:16-alpine
+  stage: dependencies
+  script:
+    - echo "Installing dependencies..."
+    - npm install
+  only:
+    - master
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules
+
+build_image:
+  image: node:16-alpine
+  stage: build
+  script:
+    - echo "Building..."
+    - npm link @angular/cli@12.2.15
+    - npm run build
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/dist
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules
+    policy: pull
+
+push-docker-registry:
+  image: docker:latest
+  stage: publish
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - echo "Deploying the app"
+    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
+    - docker push "$CI_REGISTRY_IMAGE"
+  only:
+    - master

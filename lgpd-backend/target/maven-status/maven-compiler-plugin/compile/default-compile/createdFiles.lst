@@ -1,0 +1,6 @@
+br/com/lgpd/controller/UserController.class
+br/com/lgpd/LgpdApplication.class
+br/com/lgpd/service/UserService.class
+br/com/lgpd/service/UserServiceImpl.class
+br/com/lgpd/repository/UserRepository.class
+br/com/lgpd/entity/User.class

@@ -1,0 +1,7 @@
+ci_access:
+  projects:
+  # - id: usernameorgroupname/repositoryname
+  - id: marcelohama/lgpd-backend # Project/Repo name to authorize
+  
+  # groups:
+  # - id: /path/to/group/groupname # To authorize a group

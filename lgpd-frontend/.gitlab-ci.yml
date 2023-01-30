@@ -1,0 +1,79 @@
+services:
+  - docker:dind
+
+stages:
+  - dependencies
+  - build
+  - test
+  - deploy
+
+install_dependencies:
+  image: node:16-alpine
+  stage: dependencies
+  script:
+    - npm install
+  only:
+    - master
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules
+
+build:
+  image: node:16-alpine
+  stage: build
+  script:
+    - npm link @angular/cli@12.2.15
+    - npm run build
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/dist
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules
+    policy: pull
+
+test:
+  image: node:16-alpine
+  stage: test
+  before_script:
+    - apk add chromium
+    - export CHROME_BIN=/usr/bin/chromium-browser
+  script:
+    - yarn install
+    - yarn ng test --watch=false
+  cache:
+    key: $CI_COMMIT_REF_SLUG-$CI_PROJECT_DIR
+    paths:
+      - node_modules/
+    policy: pull
+  allow_failure: true
+
+lint:
+  image: node:16-alpine
+  stage: test
+  script:
+    - npm link @angular/cli@12.2.15
+    - ng add @angular-eslint/schematics@15 --skip-confirmation
+    - ng lint
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules
+    policy: pull
+  allow_failure: true
+
+deploy:
+  image: docker:latest
+  stage: deploy
+  script:
+    - docker build --pull -t "$CI_REGISTRY_IMAGE" .
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker push "$CI_REGISTRY_IMAGE"

@@ -1,0 +1,9 @@
+{
+  "name": "lgpd",
+  "script": "mvn clean spring-boot:run",
+  "args": [
+    ""
+  ],
+  "exec_interpreter": "",
+  "exec_mode": "fork"
+}
